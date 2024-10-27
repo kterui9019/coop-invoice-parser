@@ -10,11 +10,13 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/joho/godotenv"
+	"golang.org/x/text/width"
 	"k8s.io/utils/strings/slices"
 )
 
@@ -119,6 +121,8 @@ func main() {
 	// ヘッダーを書き込む（必要に応じて修正）
 	writer.Write([]string{"Date", "Product", "Price"}) // 適切なヘッダーに変更してください
 
+	output_price := 0
+
 	for day := *from; day <= *to; day++ {
 		date := time.Date(*year, time.Month(*month), day, 0, 0, 0, 0, time.Local)
 		week := (day-1)/7 + 1
@@ -173,7 +177,7 @@ func main() {
 							// [０７／０４ （０７／０４）舞菜 おかず －６２０ １ －６２０ ◇返金します]
 							if slices.Contains(parts, "◇返金します") {
 								product := parts[2]
-								price := parts[5]
+								price := width.Fold.String(parts[5])
 
 								// CSVに書き出すデータ
 								data := []string{date.Format("2006-01-02"), product, price}
@@ -182,10 +186,17 @@ func main() {
 								if err != nil {
 									log.Fatal(err)
 								}
+
+								// 合計金額に追加
+								int_price, err := strconv.Atoi(price)
+								if err != nil {
+									log.Fatal(err)
+								}
+								output_price += int_price
 								// [メインメニュー ９０２ 舞菜 おかず ６２０ １ ６２０ ◇]
 							} else if len(parts) > 2 {
 								product := parts[2] + parts[3]
-								price := parts[6]
+								price := width.Fold.String(parts[6])
 
 								// CSVに書き出すデータ
 								data := []string{date.Format("2006-01-02"), product, price}
@@ -195,6 +206,13 @@ func main() {
 								if err != nil {
 									log.Fatal(err)
 								}
+
+								// 合計金額に追加
+								int_price, err := strconv.Atoi(price)
+								if err != nil {
+									log.Fatal(err)
+								}
+								output_price += int_price
 							} else {
 								fmt.Printf("date: %s 舞菜の単価が見つかりませんでした\n", date.Format("2006-01-02"))
 								continue
@@ -207,4 +225,6 @@ func main() {
 	}
 
 	fmt.Println("データ取得完了")
+
+	fmt.Println("合計金額: ", output_price)
 }
