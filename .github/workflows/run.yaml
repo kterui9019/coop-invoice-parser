@@ -12,9 +12,11 @@ on:
       from:
         required: true
         type: string
+        default: '1'
       to:
         required: true
         type: string
+        default: '31'
 
 
 jobs:
