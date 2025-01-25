@@ -20,7 +20,7 @@ import (
 	"k8s.io/utils/strings/slices"
 )
 
-func Env_load() {
+func env_load() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -50,7 +50,7 @@ func main() {
 	const INVOICE_URL = "https://ec.coopdeli.jp/mypage/delivery/daily_detail.html"
 
 	year, month, from, to := ParseFlag()
-	Env_load()
+	env_load()
 
 	// Cookie jarを作成
 	jar, err := cookiejar.New(nil)
